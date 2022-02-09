@@ -10,27 +10,25 @@ function App() {
     {
       id: 1,
       name: "hello",
-      completed: true,
+      completed: true
     },
     {
       id: 2,
       name: "harry",
-      completed: false,
+      completed: false
     },
     {
       id: 3,
       name: "pavan",
-      completed: true,
+      completed: true
     },
     {
       id: 4,
       name: "hayo",
-      completed: false,
-    },
+      completed: false
+    }
   ]);
-
-  const notcompletedstate = state.filter((res) => res.completed === false);
-  const completedstate = state.filter((res) => res.completed === true);
+  const [state2, setState2] = useState([]);
 
   const handleChange = (e) => {
     setInput(e.target.value);
@@ -39,7 +37,7 @@ function App() {
     const obj = {
       name: input,
       id: state.length + 2,
-      completed: false,
+      completed: false
     };
     setState([...state, obj]);
   };
@@ -47,53 +45,33 @@ function App() {
   return (
     <DragDropContext
       onDragEnd={(res) => {
-        let source;
-        let destination;
-        console.log(res);
-        if (res.source.droppableId === "completedtask") {
-          source = completedstate[res.source.index];
-        }
-        if (res.source.droppableId === "notcompletedtask") {
-          source = notcompletedstate[res.source.index];
-        }
-        if (res.destination.droppableId === "completedtask") {
-          destination = {
-            destination: res.destination.index,
-            location: "completedtask",
-          };
-          // completedstate[res.source.index]
-        }
-        if (res.destination.droppableId === "notcompletedtask") {
-          destination = {
-            destination: res.destination.index,
-            location: "notcompletedtask",
-          };
-          // completedstate[res.source.index]
-        }
+        const { source, destination } = res;
 
-        console.log({ source, destination });
+        if (!destination) return;
+        if (
+          destination.droppableId === source.droppableId &&
+          destination.index === source.index
+        )
+          return;
 
-        if (JSON.stringify(destination).length > 0) {
-          console.log("there");
+        let add,
+          active = state,
+          completed = state2;
+
+        if (source.droppableId === "stateList") {
+          add = active[source.index];
+          active.splice(source.index, 1);
+        } else {
+          add = completed[source.index];
+          completed.splice(source.index, 1);
         }
-        if (true) {
-          if (destination.location === "notcompletedtask") {
-            console.log("yes");
-            setState((prev) =>
-              prev.map((re) =>
-                re.id === source.id ? { ...re, completed: false } : re
-              )
-            );
-          }
-          if (destination.location === "completedtask") {
-            console.log("yes");
-            setState((prev) =>
-              prev.map((re) =>
-                re.id === source.id ? { ...re, completed: true } : re
-              )
-            );
-          }
+        if (destination.droppableId === "stateList") {
+          active.splice(destination.index, 0, add);
+        } else {
+          completed.splice(destination.index, 0, add);
         }
+        setState(active);
+        setState2(completed);
       }}
     >
       <Container>
@@ -107,26 +85,20 @@ function App() {
         <Grid container sx={{ paddingTop: "50px" }} spacing={1}>
           <Grid item xs={6}>
             <Typography variant="h5">Need to be completed</Typography>
-            <Droppable droppableId="notcompletedtask">
+            <Droppable droppableId="stateList">
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
-                  <BasicCard
-                    details={notcompletedstate}
-                    base={provided.placeholder}
-                  />
+                  <BasicCard details={state} base={provided.placeholder} />
                 </div>
               )}
             </Droppable>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h5">completed</Typography>
-            <Droppable droppableId="completedtask">
+            <Droppable droppableId="stateList2">
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
-                  <BasicCard
-                    details={completedstate}
-                    base={provided.placeholder}
-                  />
+                  <BasicCard details={state2} base={provided.placeholder} />
                 </div>
               )}
             </Droppable>
